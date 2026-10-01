@@ -1,0 +1,205 @@
+erDiagram
+    profiles ||--o{ emergency_requests : "reports (citizen)"
+    profiles ||--o{ flood_incidents : "reports"
+    profiles ||--o{ notifications : "receives"
+    profiles ||--o{ push_subscriptions : "registers"
+    profiles ||--o{ rescue_team_members : "belongs to"
+    profiles ||--o{ volunteers : "has volunteer profile"
+    profiles ||--o{ audit_logs : "acts as"
+    
+    rescue_teams ||--o{ rescue_team_members : "has members"
+    rescue_teams ||--o{ rescue_operations : "assigned to"
+    
+    emergency_requests ||--o{ rescue_operations : "handled by"
+    emergency_requests ||--o{ request_status_history : "tracks transitions"
+    emergency_requests ||--o{ volunteer_tasks : "spawns"
+    emergency_requests ||--o| emergency_requests : "duplicates (duplicate_of)"
+    flood_incidents ||--o{ emergency_requests : "links to"
+
+    shelters ||--o{ profiles : "managed by"
+    weather_alerts ||--o{ notifications : "triggers"
+
+    profiles {
+        uuid id PK
+        text full_name
+        text phone
+        user_role role
+        verification_status verification_status
+        text preferred_language
+        geography home_location
+        jsonb emergency_contacts
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    rescue_teams {
+        uuid id PK
+        text name
+        text organization
+        text contact_phone
+        int capacity
+        text vehicle_type
+        team_status status
+        geography current_location
+        timestamptz last_seen_at
+        verification_status verification_status
+        timestamptz created_at
+    }
+
+    rescue_team_members {
+        uuid team_id PK, FK
+        uuid user_id PK, FK
+        boolean is_leader
+        timestamptz joined_at
+    }
+
+    volunteers {
+        uuid user_id PK, FK
+        text_array skills
+        boolean availability
+        verification_status verification_status
+        geography current_location
+        timestamptz created_at
+    }
+
+    emergency_requests {
+        uuid id PK
+        text short_code UK
+        uuid citizen_id FK
+        uuid incident_id FK
+        incident_type type
+        text description
+        int people_count
+        boolean has_vulnerable_persons
+        urgency_level declared_urgency
+        numeric priority_score
+        request_status status
+        geography location
+        numeric location_accuracy_m
+        text address_text
+        text contact_phone
+        text_array media_urls
+        uuid duplicate_of FK
+        uuid verified_by FK
+        text client_request_id UK
+        timestamptz created_at
+        timestamptz updated_at
+        timestamptz completed_at
+    }
+
+    flood_incidents {
+        uuid id PK
+        uuid reported_by FK
+        text title
+        text description
+        urgency_level severity
+        geography location
+        numeric water_level_cm
+        text_array media_urls
+        verification_status verification_status
+        uuid verified_by FK
+        timestamptz created_at
+    }
+
+    rescue_operations {
+        uuid id PK
+        uuid request_id FK
+        uuid team_id FK
+        uuid assigned_by FK
+        operation_status status
+        timestamptz assigned_at
+        timestamptz accepted_at
+        timestamptz en_route_at
+        timestamptz arrived_at
+        timestamptz completed_at
+        int people_rescued
+        text notes
+    }
+
+    request_status_history {
+        uuid id PK
+        uuid request_id FK
+        request_status old_status
+        request_status new_status
+        uuid changed_by FK
+        text note
+        timestamptz created_at
+    }
+
+    shelters {
+        uuid id PK
+        text name
+        text address
+        geography location
+        int capacity
+        int current_occupancy
+        text contact_phone
+        text_array facilities
+        boolean is_open
+        uuid managed_by FK
+        timestamptz updated_at
+    }
+
+    weather_alerts {
+        uuid id PK
+        text source
+        alert_severity severity
+        text title
+        text message
+        geography center
+        numeric radius_m
+        timestamptz starts_at
+        timestamptz expires_at
+        uuid created_by FK
+        boolean is_simulated
+        timestamptz created_at
+    }
+
+    notifications {
+        uuid id PK
+        uuid user_id FK
+        text type
+        text title
+        text body
+        uuid related_request_id FK
+        uuid related_alert_id FK
+        timestamptz read_at
+        timestamptz created_at
+    }
+
+    push_subscriptions {
+        uuid id PK
+        uuid user_id FK
+        text endpoint UK
+        jsonb keys
+        timestamptz created_at
+    }
+
+    volunteer_tasks {
+        uuid id PK
+        uuid request_id FK
+        text title
+        text description
+        geography location
+        task_status status
+        uuid volunteer_id FK
+        uuid created_by FK
+        timestamptz created_at
+        timestamptz completed_at
+    }
+
+    app_settings {
+        text key PK
+        jsonb value
+        timestamptz updated_at
+    }
+
+    audit_logs {
+        uuid id PK
+        uuid actor_id FK
+        text action
+        text entity
+        uuid entity_id
+        jsonb metadata
+        timestamptz created_at
+    }

@@ -1,0 +1,73 @@
+{
+  "brand": {
+    "name": "FERRCS",
+    "tagline": "Help, coordinated."
+  },
+  "emergency": {
+    "sos": "SOS",
+    "pressAndHold": "Press and hold for 1.2s to request help",
+    "sending": "Capturing GPS & Sending...",
+    "sent": "Help request sent! A rescue team will be assigned shortly.",
+    "cancel": "Cancel Request",
+    "call112": "Call 112",
+    "nationalEmergency": "National Emergency: 112",
+    "ndrfHelp": "NDRF Helpline: 011-24363260"
+  },
+  "nav": {
+    "home": "Home",
+    "requests": "My Requests",
+    "shelters": "Shelters",
+    "alerts": "Alerts",
+    "profile": "Profile",
+    "queue": "Queue",
+    "operations": "Operations",
+    "map": "Live Map",
+    "history": "History",
+    "team": "Team",
+    "dashboard": "Dashboard",
+    "incidents": "Incidents",
+    "users": "Users",
+    "reports": "Reports",
+    "audit": "Audit Log",
+    "settings": "Settings"
+  },
+  "status": {
+    "submitted": "Submitted",
+    "verified": "Verified",
+    "prioritized": "Prioritized",
+    "assigned": "Assigned",
+    "accepted": "Accepted",
+    "en_route": "En Route",
+    "on_site": "On Site",
+    "completed": "Completed",
+    "cancelled": "Cancelled"
+  },
+  "auth": {
+    "login": "Sign In",
+    "register": "Create Account",
+    "email": "Email Address",
+    "password": "Password",
+    "phone": "Phone Number",
+    "fullName": "Full Name",
+    "sendOtp": "Send One-Time Passcode",
+    "verifyOtp": "Verify Code",
+    "role": "I am joining as",
+    "citizen": "Citizen (Need or report help)",
+    "rescue": "Rescue Team / First Responder",
+    "volunteer": "Volunteer",
+    "pendingTitle": "Application Under Review",
+    "pendingDesc": "Your responder credentials have been submitted for verification. An administrator will review and activate your account.",
+    "logout": "Sign Out"
+  },
+  "common": {
+    "connected": "Connected",
+    "reconnecting": "Reconnecting...",
+    "offline": "Offline",
+    "loading": "Loading...",
+    "save": "Save",
+    "back": "Back",
+    "confirm": "Confirm",
+    "viewDetails": "View Details",
+    "directions": "Get Directions"
+  }
+}
