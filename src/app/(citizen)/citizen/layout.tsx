@@ -11,7 +11,7 @@ export default function CitizenLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 pb-20">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 pb-28">
       <CitizenHeader />
       <OfflineBanner />
       <main className="flex-1 max-w-md w-full mx-auto p-4 flex flex-col space-y-4">

@@ -2,26 +2,30 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createClient } from "@/lib/supabase/client";
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { useTranslation } from "@/lib/i18n/context";
-import { 
-  AlertCircle, 
-  Loader2, 
-  ShieldAlert, 
-  ShieldCheck, 
-  User, 
-  HeartHandshake, 
-  KeyRound, 
-  Check, 
-  Database,
-  ArrowRight
+import {
+  AlertCircle,
+  Loader2,
+  ShieldAlert,
+  ShieldCheck,
+  User,
+  HeartHandshake,
+  KeyRound,
+  Check,
+  ArrowRight,
+  Phone,
+  Eye,
+  EyeOff,
+  Radio,
+  Shield,
+  Zap,
 } from "lucide-react";
 
 interface SupabaseUserCredential {
@@ -35,27 +39,28 @@ interface SupabaseUserCredential {
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextPath = searchParams.get("next");
   const { t } = useTranslation();
   const supabase = createClient();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [phone, setPhone] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  // Live Supabase credentials fetched from backend
   const [supabaseUsers, setSupabaseUsers] = useState<SupabaseUserCredential[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
-  // Fetch registered credentials from Supabase on mount
   useEffect(() => {
+    setMounted(true);
     async function loadSupabaseCredentials() {
       try {
-        setLoadingUsers(true);
         const res = await fetch("/api/auth/supabase-users");
         const data = await res.json();
         if (data.success && Array.isArray(data.users)) {
@@ -70,36 +75,28 @@ export default function LoginPage() {
     loadSupabaseCredentials();
   }, []);
 
-  // Handle Email & Password Login (Credential Authentication only)
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setErrorMsg(null);
-
     const cleanEmail = email.trim();
     const cleanPassword = password.trim();
-
     if (!cleanEmail || !cleanPassword) {
       setErrorMsg("Please enter both email address and password.");
       setLoading(false);
       return;
     }
-
     try {
-      // Authenticate directly against Supabase Auth
       const { data, error } = await supabase.auth.signInWithPassword({
         email: cleanEmail,
         password: cleanPassword,
       });
-
       if (error) {
-        setErrorMsg(`Supabase Authentication Failed: ${error.message}`);
+        setErrorMsg(`Authentication failed: ${error.message}`);
         setLoading(false);
         return;
       }
-
       if (data?.user) {
-        // Resolve user role from metadata or email structure
         const role =
           data.user.user_metadata?.role ||
           (cleanEmail.includes("admin")
@@ -109,81 +106,51 @@ export default function LoginPage() {
             : cleanEmail.includes("volunteer")
             ? "volunteer"
             : "citizen");
-
-        // Sync authenticated role cookie for middleware and SSR navigation
-        document.cookie = `ferrcs_demo_role=${role}; path=/; max-age=86400`;
-
-        // Direct navigation to authenticated portal
-        if (role === "admin") {
-          window.location.href = "/admin";
-        } else if (role === "rescue_team") {
-          window.location.href = "/rescue";
-        } else if (role === "volunteer") {
-          window.location.href = "/volunteer";
-        } else {
-          window.location.href = "/citizen";
-        }
+        const defaultPortal =
+          role === "admin"
+            ? "/admin"
+            : role === "rescue_team"
+            ? "/rescue"
+            : role === "volunteer"
+            ? "/volunteer"
+            : "/citizen";
+        window.location.href = nextPath || defaultPortal;
       }
     } catch (err) {
-      setErrorMsg((err as Error).message || "An unexpected error occurred during authentication.");
+      setErrorMsg((err as Error).message || "An unexpected error occurred.");
       setLoading(false);
     }
   };
 
-  // Handle Phone OTP Send
   const handleSendPhoneOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setErrorMsg(null);
-
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        phone: phone.trim(),
-      });
-
-      if (error) {
-        setErrorMsg(`SMS Dispatch Failed: ${error.message}`);
-        setLoading(false);
-        return;
-      }
+      const { error } = await supabase.auth.signInWithOtp({ phone: phone.trim() });
+      if (error) { setErrorMsg(`SMS failed: ${error.message}`); setLoading(false); return; }
       setOtpSent(true);
     } catch (err) {
       setErrorMsg((err as Error).message);
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
-  // Handle Phone OTP Verification
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setErrorMsg(null);
-
     try {
       const { data, error } = await supabase.auth.verifyOtp({
-        phone: phone.trim(),
-        token: otpCode.trim(),
-        type: "sms",
+        phone: phone.trim(), token: otpCode.trim(), type: "sms",
       });
-
-      if (error) {
-        setErrorMsg(`Passcode Verification Failed: ${error.message}`);
-        setLoading(false);
-        return;
-      }
-
-      if (data?.user) {
-        document.cookie = `ferrcs_demo_role=citizen; path=/; max-age=86400`;
-        window.location.href = "/citizen";
-      }
+      if (error) { setErrorMsg(`Verification failed: ${error.message}`); setLoading(false); return; }
+      if (data?.user) window.location.href = nextPath || "/citizen";
     } catch (err) {
       setErrorMsg((err as Error).message);
       setLoading(false);
     }
   };
 
-  // Helper to load credentials into inputs without auto-submitting
   const applyCredentials = (credEmail: string, credPass: string) => {
     setEmail(credEmail);
     setPassword(credPass);
@@ -194,283 +161,288 @@ export default function LoginPage() {
 
   const getRoleBadge = (role: string) => {
     switch (role) {
-      case "admin":
-        return {
-          label: "ADMIN HQ",
-          className: "bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300 border-red-200 dark:border-red-900",
-          icon: ShieldCheck,
-        };
-      case "rescue_team":
-        return {
-          label: "RESCUE OPS",
-          className: "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200 dark:border-amber-900",
-          icon: ShieldAlert,
-        };
-      case "volunteer":
-        return {
-          label: "VOLUNTEER",
-          className: "bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300 border-purple-200 dark:border-purple-900",
-          icon: HeartHandshake,
-        };
-      default:
-        return {
-          label: "CITIZEN",
-          className: "bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300 border-blue-200 dark:border-blue-900",
-          icon: User,
-        };
+      case "admin": return { label: "Admin HQ", className: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20", icon: ShieldCheck };
+      case "rescue_team": return { label: "Rescue Ops", className: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20", icon: ShieldAlert };
+      case "volunteer": return { label: "Volunteer", className: "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20", icon: HeartHandshake };
+      default: return { label: "Citizen", className: "bg-primary/10 text-primary border-primary/20", icon: User };
     }
   };
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 bg-slate-50 dark:bg-slate-950 min-h-[calc(100vh-4rem)]">
-      <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        
-        {/* Main Credential Login Card */}
-        <div className="lg:col-span-7">
-          <Card className="w-full shadow-lg border-2">
-            <CardHeader className="space-y-1 text-center">
-              <div className="flex justify-center mb-2">
-                <BrandLogo size={36} />
-              </div>
-              <CardTitle className="text-2xl font-bold tracking-tight">Sign In to FERRCS</CardTitle>
-              <CardDescription>
-                Authenticate with your verified credentials to access your designated command portal.
-              </CardDescription>
-            </CardHeader>
+    <div className="flex-1 min-h-screen flex">
 
-            <CardContent className="space-y-4">
-              {errorMsg && (
-                <div className="p-3.5 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-900 rounded-md flex items-start gap-2 text-xs font-medium text-red-800 dark:text-red-200">
-                  <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                  <span className="break-all">{errorMsg}</span>
-                </div>
-              )}
-
-              <Tabs defaultValue="email" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="email">Email & Password</TabsTrigger>
-                  <TabsTrigger value="phone">Phone OTP</TabsTrigger>
-                </TabsList>
-
-                {/* Email + Password Form */}
-                <TabsContent value="email">
-                  <form onSubmit={handleEmailLogin} className="space-y-4 pt-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email Address</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        autoComplete="email"
-                        placeholder="e.g. admin@ferrcs.demo"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        disabled={loading}
-                        className="font-medium"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="password">Password</Label>
-                        <Link
-                          href="/forgot-password"
-                          className="text-xs text-primary hover:underline"
-                        >
-                          Forgot password?
-                        </Link>
-                      </div>
-                      <Input
-                        id="password"
-                        type="password"
-                        autoComplete="current-password"
-                        placeholder="••••••••••••"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        disabled={loading}
-                        className="font-mono"
-                      />
-                    </div>
-
-                    <Button type="submit" className="w-full h-11 text-sm font-bold" disabled={loading}>
-                      {loading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Authenticating via Supabase...
-                        </>
-                      ) : (
-                        <>
-                          <KeyRound className="mr-2 h-4 w-4" />
-                          Sign In with Credentials
-                        </>
-                      )}
-                    </Button>
-                  </form>
-                </TabsContent>
-
-                {/* Phone OTP Form */}
-                <TabsContent value="phone">
-                  {!otpSent ? (
-                    <form onSubmit={handleSendPhoneOtp} className="space-y-4 pt-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="phone">Mobile Phone Number</Label>
-                        <Input
-                          id="phone"
-                          type="tel"
-                          placeholder="+91 91000 00002"
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          required
-                          disabled={loading}
-                        />
-                        <p className="text-[11px] text-muted-foreground">
-                          A 6-digit confirmation code will be dispatched via SMS.
-                        </p>
-                      </div>
-                      <Button type="submit" className="w-full h-11 text-sm font-bold" disabled={loading}>
-                        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Send Verification Code
-                      </Button>
-                    </form>
-                  ) : (
-                    <form onSubmit={handleVerifyOtp} className="space-y-4 pt-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="otp">Enter 6-Digit Passcode</Label>
-                        <Input
-                          id="otp"
-                          type="text"
-                          maxLength={6}
-                          placeholder="123456"
-                          value={otpCode}
-                          onChange={(e) => setOtpCode(e.target.value)}
-                          required
-                          disabled={loading}
-                          className="text-center text-lg tracking-widest font-mono"
-                        />
-                      </div>
-                      <Button type="submit" className="w-full h-11 text-sm font-bold" disabled={loading}>
-                        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Verify & Sign In
-                      </Button>
-                      <button
-                        type="button"
-                        onClick={() => setOtpSent(false)}
-                        className="text-xs text-primary w-full text-center hover:underline"
-                      >
-                        Change phone number
-                      </button>
-                    </form>
-                  )}
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-
-            <CardFooter className="flex flex-col space-y-2 border-t pt-4 text-center">
-              <p className="text-xs text-muted-foreground">
-                Don't have an account yet?{" "}
-                <Link href="/register" className="text-primary font-semibold hover:underline">
-                  Register new account
-                </Link>
-              </p>
-            </CardFooter>
-          </Card>
+      {/* ─── Left Brand Panel (desktop only) ─── */}
+      <div className="hidden lg:flex lg:w-[440px] xl:w-[520px] shrink-0 flex-col relative overflow-hidden bg-[hsl(222_32%_8%)]">
+        {/* Background gradient orbs */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-primary/20 blur-3xl" />
+          <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-sos/15 blur-3xl" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-safe/10 blur-3xl" />
         </div>
+        {/* Grid overlay */}
+        <div
+          className="absolute inset-0 opacity-[0.04] pointer-events-none"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+          }}
+        />
 
-        {/* Supabase Fetched Credentials Directory Panel */}
-        <div className="lg:col-span-5 space-y-4">
-          <Card className="border shadow-md bg-slate-100/70 dark:bg-slate-900/60">
-            <CardHeader className="pb-3 pt-4 px-4 border-b">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Database className="h-4 w-4 text-primary" />
-                  <CardTitle className="text-sm font-bold">Supabase Cloud Credentials</CardTitle>
-                </div>
-                <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                  LIVE SUPABASE
-                </span>
-              </div>
-              <CardDescription className="text-xs mt-1">
-                Accounts registered in Supabase Auth. Click &ldquo;Autofill&rdquo; to populate the inputs, then click &ldquo;Sign In&rdquo; to authenticate.
-              </CardDescription>
-            </CardHeader>
+        <div className="relative flex flex-col h-full p-10 xl:p-12">
+          {/* Logo */}
+          <BrandLogo size={32} variant="white" />
 
-            <CardContent className="p-3 space-y-2.5 max-h-[520px] overflow-y-auto">
-              {loadingUsers ? (
-                <div className="p-6 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                  Fetching accounts from Supabase Auth...
-                </div>
-              ) : supabaseUsers.length === 0 ? (
-                <div className="p-4 text-center text-xs text-muted-foreground">
-                  No accounts found in Supabase Auth.
-                </div>
-              ) : (
-                supabaseUsers.map((u) => {
-                  const badge = getRoleBadge(u.role);
-                  const Icon = badge.icon;
-                  const isCurrent = email === u.email;
+          {/* Center content */}
+          <div className="flex-1 flex flex-col justify-center space-y-8">
+            <div className="space-y-4">
+              <h2 className="text-3xl xl:text-4xl font-black text-white leading-tight tracking-tight">
+                Coordinated rescue.{" "}
+                <br />
+                <span className="text-gradient-primary">When it matters.</span>
+              </h2>
+              <p className="text-white/60 leading-relaxed text-sm">
+                Sign in to access your role-specific command portal for real-time
+                flood emergency coordination.
+              </p>
+            </div>
 
-                  return (
-                    <div
-                      key={u.email}
-                      className={`p-3 rounded-lg border bg-background transition-all ${
-                        isCurrent
-                          ? "border-primary ring-1 ring-primary shadow-sm"
-                          : "hover:border-slate-300 dark:hover:border-slate-700"
-                      }`}
+            {/* Feature bullets */}
+            <div className="space-y-3">
+              {[
+                { icon: Zap, text: "Sub-3-tap SOS dispatch" },
+                { icon: Radio, text: "Real-time GPS tracking" },
+                { icon: Shield, text: "Offline-first PWA" },
+              ].map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div key={item.text} className="flex items-center gap-3 text-sm text-white/70">
+                    <div className="flex items-center justify-center h-7 w-7 rounded-lg bg-white/10 border border-white/10 shrink-0">
+                      <Icon className="h-3.5 w-3.5 text-white/80" />
+                    </div>
+                    {item.text}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Footer note */}
+          <p className="text-white/30 text-xs">
+            FERRCS · Disaster-hardened coordination system
+          </p>
+        </div>
+      </div>
+
+      {/* ─── Right Form Panel ─── */}
+      <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-10 bg-background">
+        <div className="w-full max-w-md space-y-6">
+          {/* Mobile-only logo */}
+          <div className="lg:hidden flex justify-center mb-2">
+            <BrandLogo size={28} />
+          </div>
+
+          {/* Header */}
+          <div className="space-y-1.5">
+            <h1 className="text-2xl font-black tracking-tight text-foreground">
+              Welcome back
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Sign in to your FERRCS account
+              {nextPath && (
+                <span className="ml-1 text-primary font-medium">to continue</span>
+              )}
+            </p>
+          </div>
+
+          {/* Error message */}
+          {errorMsg && (
+            <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-destructive/8 border border-destructive/20 text-destructive text-sm animate-fade-in">
+              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+              <span className="break-all">{errorMsg}</span>
+            </div>
+          )}
+
+          {/* Auth forms */}
+          <Tabs defaultValue="email" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-1">
+              <TabsTrigger value="email">Email & Password</TabsTrigger>
+              <TabsTrigger value="phone">Phone OTP</TabsTrigger>
+            </TabsList>
+
+            {/* Email form */}
+            <TabsContent value="email">
+              <form onSubmit={handleEmailLogin} className="space-y-4 pt-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="email" className="text-sm font-semibold">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="you@ferrcs.demo"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password" className="text-sm font-semibold">Password</Label>
+                    <Link href="/forgot-password" className="text-xs text-primary hover:underline">
+                      Forgot password?
+                    </Link>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="current-password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      disabled={loading}
+                      className="pr-11 font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      tabIndex={-1}
                     >
-                      <div className="flex items-center justify-between gap-2 mb-1.5">
-                        <span
-                          className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded border ${badge.className}`}
-                        >
-                          <Icon className="h-3 w-3" />
-                          {badge.label}
-                        </span>
-                        <span className="text-[11px] text-muted-foreground font-medium truncate max-w-[140px]">
-                          {u.fullName}
-                        </span>
-                      </div>
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+                <Button type="submit" className="w-full h-11" disabled={loading}>
+                  {loading ? (
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Signing in…</>
+                  ) : (
+                    <><KeyRound className="mr-2 h-4 w-4" />Sign In</>
+                  )}
+                </Button>
+              </form>
+            </TabsContent>
 
-                      <div className="space-y-1 text-xs font-mono">
-                        <div className="flex items-center justify-between text-slate-700 dark:text-slate-300">
-                          <span className="text-[10px] uppercase font-sans text-muted-foreground">Email:</span>
-                          <span className="font-semibold select-all text-[11px]">{u.email}</span>
-                        </div>
-                        <div className="flex items-center justify-between text-slate-700 dark:text-slate-300">
-                          <span className="text-[10px] uppercase font-sans text-muted-foreground">Password:</span>
-                          <span className="font-semibold select-all text-[11px] text-primary">{u.password}</span>
-                        </div>
-                      </div>
+            {/* Phone OTP form */}
+            <TabsContent value="phone">
+              {!otpSent ? (
+                <form onSubmit={handleSendPhoneOtp} className="space-y-4 pt-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="phone" className="text-sm font-semibold">Mobile Number</Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="+91 91000 00002"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        required disabled={loading}
+                        className="pl-10"
+                      />
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">A 6-digit code will be sent via SMS.</p>
+                  </div>
+                  <Button type="submit" className="w-full h-11" disabled={loading}>
+                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Send Code
+                  </Button>
+                </form>
+              ) : (
+                <form onSubmit={handleVerifyOtp} className="space-y-4 pt-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="otp" className="text-sm font-semibold">6-Digit Passcode</Label>
+                    <Input
+                      id="otp" type="text" maxLength={6}
+                      placeholder="1 2 3 4 5 6"
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value)}
+                      required disabled={loading}
+                      className="text-center text-2xl tracking-[0.5em] font-mono h-14"
+                    />
+                  </div>
+                  <Button type="submit" className="w-full h-11" disabled={loading}>
+                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Verify & Sign In
+                  </Button>
+                  <button type="button" onClick={() => setOtpSent(false)}
+                    className="text-xs text-muted-foreground hover:text-foreground w-full text-center transition-colors">
+                    ← Change phone number
+                  </button>
+                </form>
+              )}
+            </TabsContent>
+          </Tabs>
 
-                      <div className="mt-2.5 pt-2 border-t flex justify-end">
+          {/* Register link */}
+          <p className="text-center text-sm text-muted-foreground">
+            No account?{" "}
+            <Link href="/register" className="text-primary font-semibold hover:underline">
+              Create one
+            </Link>
+          </p>
+
+          {/* Credentials directory */}
+          {(loadingUsers || supabaseUsers.length > 0) && (
+            <div className="border border-border/60 rounded-xl overflow-hidden">
+              <div className="flex items-center gap-2 px-4 py-3 bg-muted/40 border-b border-border/40">
+                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-xs font-bold text-foreground">Demo Accounts</span>
+                <span className="ml-auto text-[10px] font-mono text-muted-foreground">Live Supabase</span>
+              </div>
+              <div className="divide-y divide-border/40 max-h-64 overflow-y-auto">
+                {loadingUsers ? (
+                  <div className="p-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Loading accounts…
+                  </div>
+                ) : (
+                  supabaseUsers.map((u) => {
+                    const badge = getRoleBadge(u.role);
+                    const Icon = badge.icon;
+                    const isCurrent = email === u.email;
+                    return (
+                      <div
+                        key={u.email}
+                        className={`flex items-center gap-3 px-4 py-3 transition-colors ${
+                          isCurrent ? "bg-primary/5" : "hover:bg-muted/40"
+                        }`}
+                      >
+                        <div className={`flex items-center justify-center h-7 w-7 rounded-lg border shrink-0 ${badge.className}`}>
+                          <Icon className="h-3.5 w-3.5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${badge.className}`}>
+                              {badge.label}
+                            </span>
+                            <span className="text-[11px] font-medium text-foreground truncate">{u.fullName}</span>
+                          </div>
+                          <span className="text-[10px] font-mono text-muted-foreground truncate block">{u.email}</span>
+                        </div>
                         <Button
                           type="button"
                           variant={isCurrent ? "default" : "outline"}
                           size="sm"
                           onClick={() => applyCredentials(u.email, u.password)}
-                          className="h-7 text-[11px] px-2.5"
+                          className="h-7 px-2.5 text-[10px] shrink-0"
                         >
                           {copiedField === u.email ? (
-                            <>
-                              <Check className="h-3 w-3 mr-1 text-emerald-500" />
-                              Populated
-                            </>
+                            <><Check className="h-3 w-3 mr-1 text-emerald-500" />Done</>
                           ) : (
-                            <>
-                              Autofill Inputs
-                              <ArrowRight className="h-3 w-3 ml-1" />
-                            </>
+                            <>Fill <ArrowRight className="h-3 w-3 ml-1" /></>
                           )}
                         </Button>
                       </div>
-                    </div>
-                  );
-                })
-              )}
-            </CardContent>
-          </Card>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          )}
         </div>
-
       </div>
     </div>
   );

@@ -6,24 +6,35 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.97] select-none",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm",
-        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+        default:
+          "bg-primary text-primary-foreground shadow-sm hover:brightness-110 hover:shadow-glow-primary/50",
+        destructive:
+          "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+        outline:
+          "border border-border bg-card text-foreground shadow-xs hover:bg-accent hover:text-accent-foreground hover:border-primary/40",
+        secondary:
+          "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/70",
+        ghost:
+          "text-muted-foreground hover:bg-accent hover:text-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        sos: "bg-sos text-white hover:bg-sos/90 font-bold shadow-lg shadow-red-500/30",
-        safe: "bg-safe text-white hover:bg-safe/90 font-semibold shadow-sm",
+        sos: "bg-sos text-white font-bold shadow-glow-sos hover:brightness-110 hover:shadow-[0_0_36px_-4px_hsl(4_86%_48%_/0.6)] active:brightness-95 animate-sos-glow",
+        safe: "bg-safe text-white font-semibold shadow-glow-safe/50 hover:brightness-110",
+        warning:
+          "bg-warning text-warning-foreground font-semibold shadow-sm hover:brightness-110",
+        premium:
+          "bg-gradient-to-br from-primary to-blue-600 text-white font-semibold shadow-glow-primary hover:brightness-110 hover:shadow-glow-primary",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-12 rounded-md px-8 text-base",
+        default: "h-10 px-5 py-2",
+        sm: "h-8 rounded-md px-3 text-xs",
+        lg: "h-12 rounded-xl px-8 text-base",
+        xl: "h-14 rounded-xl px-10 text-lg",
         icon: "h-10 w-10",
+        "icon-sm": "h-8 w-8 rounded-md",
         touch: "min-h-[48px] min-w-[48px] px-5 py-3 text-base font-semibold",
       },
     },

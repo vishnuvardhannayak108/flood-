@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { Database, UserRole, VerificationStatus } from "@/types/database";
+import { Database } from "@/types/database";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -29,18 +29,41 @@ export async function updateSession(request: NextRequest) {
   const isVolunteerPath = pathname.startsWith("/volunteer");
   const isProtectedPath = isCitizenPath || isRescuePath || isAdminPath || isVolunteerPath;
 
-  // In end-to-end testing & local runtime: allow direct access to each portal and sync role cookie
   if (isProtectedPath) {
-    const targetRole: UserRole = isAdminPath
-      ? "admin"
-      : isRescuePath
-      ? "rescue_team"
-      : isVolunteerPath
-      ? "volunteer"
-      : "citizen";
+    // Create a Supabase client that can read/refresh the session from cookies
+    const supabase = createServerClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value }) =>
+              request.cookies.set(name, value)
+            );
+            supabaseResponse = NextResponse.next({ request });
+            cookiesToSet.forEach(({ name, value, options }) =>
+              supabaseResponse.cookies.set(name, value, options)
+            );
+          },
+        },
+      }
+    );
 
-    supabaseResponse.cookies.set("ferrcs_demo_role", targetRole, { path: "/" });
-    return supabaseResponse;
+    // Refresh session if expired — required for Server Components
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      // Not authenticated — redirect to /login and remember where they wanted to go
+      const loginUrl = request.nextUrl.clone();
+      loginUrl.pathname = "/login";
+      loginUrl.searchParams.set("next", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
   }
 
   return supabaseResponse;

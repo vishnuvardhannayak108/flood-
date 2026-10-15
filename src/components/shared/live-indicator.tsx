@@ -13,7 +13,9 @@ interface LiveIndicatorProps {
 
 export function LiveIndicator({ className, state }: LiveIndicatorProps) {
   const { t } = useTranslation();
-  const [internalState, setInternalState] = useState<ConnectionState>(state || "connected");
+  const [internalState, setInternalState] = useState<ConnectionState>(
+    state || "connected"
+  );
 
   useEffect(() => {
     if (state) {
@@ -26,10 +28,7 @@ export function LiveIndicator({ className, state }: LiveIndicatorProps) {
 
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
-
-    if (!navigator.onLine) {
-      setInternalState("offline");
-    }
+    if (!navigator.onLine) setInternalState("offline");
 
     return () => {
       window.removeEventListener("online", handleOnline);
@@ -37,20 +36,26 @@ export function LiveIndicator({ className, state }: LiveIndicatorProps) {
     };
   }, [state]);
 
-  const configs: Record<ConnectionState, { dot: string; text: string; label: string }> = {
+  const configs: Record<
+    ConnectionState,
+    { dot: string; bg: string; text: string; label: string }
+  > = {
     connected: {
-      dot: "bg-emerald-500 animate-pulse",
-      text: "text-emerald-800 dark:text-emerald-300",
-      label: t("common.connected", "Connected"),
+      dot: "bg-emerald-400",
+      bg: "bg-emerald-500/10 border-emerald-500/25",
+      text: "text-emerald-700 dark:text-emerald-400",
+      label: t("common.connected", "Live"),
     },
     reconnecting: {
-      dot: "bg-amber-500 animate-ping",
-      text: "text-amber-800 dark:text-amber-300",
-      label: t("common.reconnecting", "Reconnecting..."),
+      dot: "bg-amber-400 animate-ping",
+      bg: "bg-amber-500/10 border-amber-500/25",
+      text: "text-amber-700 dark:text-amber-400",
+      label: t("common.reconnecting", "Reconnecting…"),
     },
     offline: {
-      dot: "bg-red-500",
-      text: "text-red-800 dark:text-red-300",
+      dot: "bg-red-400",
+      bg: "bg-red-500/10 border-red-500/25",
+      text: "text-red-700 dark:text-red-400",
       label: t("common.offline", "Offline"),
     },
   };
@@ -60,19 +65,20 @@ export function LiveIndicator({ className, state }: LiveIndicatorProps) {
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border backdrop-blur-sm transition-all",
-        internalState === "connected" && "bg-emerald-500/10 border-emerald-500/30",
-        internalState === "reconnecting" && "bg-amber-500/10 border-amber-500/30",
-        internalState === "offline" && "bg-red-500/15 border-red-500/30",
+        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-all duration-300",
+        current.bg,
         className
       )}
       role="status"
       aria-live="polite"
     >
-      <span className={cn("h-2 w-2 rounded-full shrink-0", current.dot)} />
-      <span className={cn("text-[11px] font-medium tracking-tight", current.text)}>
-        {current.label}
+      <span className="relative flex h-2 w-2 shrink-0">
+        {internalState === "connected" && (
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
+        )}
+        <span className={cn("relative inline-flex rounded-full h-2 w-2", current.dot)} />
       </span>
+      <span className={cn("tracking-tight", current.text)}>{current.label}</span>
     </div>
   );
 }

@@ -1,6 +1,99 @@
 {
   "requests": [
     {
+      "id": "req-1792038432896",
+      "shortCode": "FR-2931",
+      "citizenName": "Emergency Caller",
+      "phone": "+91 91000 00002",
+      "urgency": "critical",
+      "type": "trapped",
+      "peopleCount": 1,
+      "hasVulnerable": false,
+      "priorityScore": 44,
+      "distanceKm": 1.5,
+      "status": "cancelled",
+      "createdAt": "09:57 am",
+      "address": "Near 17.3850° N, 78.4867° E",
+      "lat": 17.385,
+      "lng": 78.4867,
+      "description": "Immediate SOS triggered via mobile emergency button",
+      "history": [
+        {
+          "status": "submitted",
+          "time": "09:57 am",
+          "note": "Distress SOS submitted via mobile emergency portal"
+        },
+        {
+          "status": "prioritized",
+          "time": "09:57 am",
+          "note": "Priority score evaluated at 44 pts"
+        },
+        {
+          "status": "prioritized",
+          "time": "09:57 am",
+          "note": "Trapped. Note: "
+        },
+        {
+          "status": "cancelled",
+          "time": "09:57 am",
+          "note": "Cancelled by citizen"
+        }
+      ],
+      "notes": "Cancelled by citizen"
+    },
+    {
+      "id": "req-1792037988474",
+      "shortCode": "FR-3676",
+      "citizenName": "E2E Test Citizen",
+      "phone": "+91 98490 99999",
+      "urgency": "critical",
+      "type": "Trapped on Rooftop",
+      "peopleCount": 4,
+      "hasVulnerable": true,
+      "priorityScore": 71,
+      "distanceKm": 1.5,
+      "status": "completed",
+      "createdAt": "09:49 am",
+      "address": "Chaderghat Riverfront Lane 4",
+      "lat": 17.3753,
+      "lng": 78.4878,
+      "description": "Flood water surging past ground floor window sill",
+      "history": [
+        {
+          "status": "submitted",
+          "time": "09:49 am",
+          "note": "Distress SOS submitted via mobile emergency portal"
+        },
+        {
+          "status": "prioritized",
+          "time": "09:49 am",
+          "note": "Priority score evaluated at 71 pts"
+        },
+        {
+          "status": "assigned",
+          "time": "09:49 am",
+          "note": "Assigned to boat unit"
+        },
+        {
+          "status": "en_route",
+          "time": "09:49 am",
+          "note": "Boat engine deployed, navigating river corridor"
+        },
+        {
+          "status": "on_site",
+          "time": "09:49 am",
+          "note": "Responders reached rooftop, boarding citizens onto boat"
+        },
+        {
+          "status": "completed",
+          "time": "09:49 am",
+          "note": "All 4 victims safely transferred to Amberpet Relief Camp"
+        }
+      ],
+      "assignedTeam": "Team Alpha 01",
+      "notes": "All 4 victims safely transferred to Amberpet Relief Camp"
+    },
+    {
       "id": "req-1790836372945",
       "shortCode": "FR-6201",
       "citizenName": "E2E Test Citizen",
@@ -113,7 +206,7 @@
       "lat": 17.3895,
       "lng": 78.518,
       "maxCapacity": 500,
-      "currentOccupancy": 50,
+      "currentOccupancy": 60,
       "status": "open",
       "facilities": [
         "Medical Post",
@@ -132,7 +225,7 @@
       "lat": 17.367,
       "lng": 78.498,
       "maxCapacity": 350,
-      "currentOccupancy": 0,
+      "currentOccupancy": 10,
       "status": "open",
       "facilities": [
         "First Aid",
@@ -180,6 +273,18 @@
   ],
   "alerts": [],
   "incidents": [
+    {
+      "title": "E2E Overflowing Drain",
+      "description": "Severe backflow into residential lane",
+      "waterLevelCm": 85,
+      "locationName": "Amberpet Lane 2",
+      "lat": 17.389,
+      "lng": 78.518,
+      "reporterName": "Test Citizen",
+      "id": "inc-1792037988537",
+      "status": "verified",
+      "reportedAt": "Just now"
+    },
     {
       "title": "E2E Overflowing Drain",
       "description": "Severe backflow into residential lane",
@@ -326,6 +431,226 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "log-1792039527773",
+      "action": "UPDATE_OCCUPANCY",
+      "tableName": "shelters",
+      "recordId": "Govt High School Relief Center Malakpet",
+      "actorName": "Disaster Admin",
+      "actorRole": "admin",
+      "createdAt": "Just now",
+      "diff": {
+        "occupancy": 10,
+        "capacity": 350,
+        "status": "open"
+      }
+    },
+    {
+      "id": "log-1792039526458",
+      "action": "UPDATE_OCCUPANCY",
+      "tableName": "shelters",
+      "recordId": "GHMC Amberpet Indoor Stadium Relief Camp",
+      "actorName": "Disaster Admin",
+      "actorRole": "admin",
+      "createdAt": "Just now",
+      "diff": {
+        "occupancy": 60,
+        "capacity": 500,
+        "status": "open"
+      }
+    },
+    {
+      "id": "log-1792039516807",
+      "action": "UPDATE_USER_ROLE",
+      "tableName": "profiles",
+      "recordId": "Sunil Reddy (Red Cross Volunteer)",
+      "actorName": "System Admin",
+      "actorRole": "admin",
+      "createdAt": "Just now",
+      "diff": {
+        "verificationStatus": "verified"
+      }
+    },
+    {
+      "id": "log-1792039515965",
+      "action": "UPDATE_USER_ROLE",
+      "tableName": "profiles",
+      "recordId": "K. Satish (SDRF Diver Applicant)",
+      "actorName": "System Admin",
+      "actorRole": "admin",
+      "createdAt": "Just now",
+      "diff": {
+        "verificationStatus": "verified"
+      }
+    },
+    {
+      "id": "log-1792038459643",
+      "action": "UPDATE_STATUS",
+      "tableName": "emergency_requests",
+      "recordId": "FR-2931",
+      "actorName": "Rescue Team",
+      "actorRole": "rescue_team",
+      "createdAt": "Just now",
+      "diff": {
+        "oldStatus": "prioritized",
+        "newStatus": "cancelled",
+        "note": "Cancelled by citizen"
+      }
+    },
+    {
+      "id": "log-1792038451236",
+      "action": "UPDATE_STATUS",
+      "tableName": "emergency_requests",
+      "recordId": "FR-2931",
+      "actorName": "Rescue Team",
+      "actorRole": "rescue_team",
+      "createdAt": "Just now",
+      "diff": {
+        "oldStatus": "prioritized",
+        "newStatus": "prioritized",
+        "note": "Trapped. Note: "
+      }
+    },
+    {
+      "id": "log-1792038432905",
+      "action": "SUBMIT_SOS",
+      "tableName": "emergency_requests",
+      "recordId": "FR-2931",
+      "actorName": "Emergency Caller",
+      "actorRole": "citizen",
+      "createdAt": "Just now",
+      "diff": {
+        "urgency": "critical",
+        "people": 1,
+        "score": 44
+      }
+    },
+    {
+      "id": "log-1792037988536",
+      "action": "BROADCAST_ALERT",
+      "tableName": "weather_alerts",
+      "recordId": "E2E Siren Test Alert",
+      "actorName": "Chief Operations Director",
+      "actorRole": "admin",
+      "createdAt": "Just now",
+      "diff": {
+        "severity": "critical",
+        "title": "E2E Siren Test Alert"
+      }
+    },
+    {
+      "id": "log-1792037988535",
+      "action": "UPDATE_OCCUPANCY",
+      "tableName": "shelters",
+      "recordId": "GHMC Amberpet Indoor Stadium Relief Camp",
+      "actorName": "Shelter Coordinator",
+      "actorRole": "admin",
+      "createdAt": "Just now",
+      "diff": {
+        "occupancy": 50,
+        "capacity": 500,
+        "status": "open"
+      }
+    },
+    {
+      "id": "log-1792037988535",
+      "action": "UPDATE_OCCUPANCY",
+      "tableName": "shelters",
+      "recordId": "GHMC Amberpet Indoor Stadium Relief Camp",
+      "actorName": "Shelter Coordinator",
+      "actorRole": "admin",
+      "createdAt": "Just now",
+      "diff": {
+        "occupancy": 500,
+        "capacity": 500,
+        "status": "full"
+      }
+    },
+    {
+      "id": "log-1792037988534",
+      "action": "UPDATE_OCCUPANCY",
+      "tableName": "shelters",
+      "recordId": "GHMC Amberpet Indoor Stadium Relief Camp",
+      "actorName": "Shelter Coordinator",
+      "actorRole": "admin",
+      "createdAt": "Just now",
+      "diff": {
+        "occupancy": 150,
+        "capacity": 500,
+        "status": "open"
+      }
+    },
+    {
+      "id": "log-1792037988533",
+      "action": "UPDATE_STATUS",
+      "tableName": "emergency_requests",
+      "recordId": "FR-3676",
+      "actorName": "Team Lead",
+      "actorRole": "rescue_team",
+      "createdAt": "Just now",
+      "diff": {
+        "oldStatus": "on_site",
+        "newStatus": "completed",
+        "note": "All 4 victims safely transferred to Amberpet Relief Camp"
+      }
+    },
+    {
+      "id": "log-1792037988532",
+      "action": "UPDATE_STATUS",
+      "tableName": "emergency_requests",
+      "recordId": "FR-3676",
+      "actorName": "Team Lead",
+      "actorRole": "rescue_team",
+      "createdAt": "Just now",
+      "diff": {
+        "oldStatus": "en_route",
+        "newStatus": "on_site",
+        "note": "Responders reached rooftop, boarding citizens onto boat"
+      }
+    },
+    {
+      "id": "log-1792037988532",
+      "action": "UPDATE_STATUS",
+      "tableName": "emergency_requests",
+      "recordId": "FR-3676",
+      "actorName": "Team Lead",
+      "actorRole": "rescue_team",
+      "createdAt": "Just now",
+      "diff": {
+        "oldStatus": "assigned",
+        "newStatus": "en_route",
+        "note": "Boat engine deployed, navigating river corridor"
+      }
+    },
+    {
+      "id": "log-1792037988531",
+      "action": "UPDATE_STATUS",
+      "tableName": "emergency_requests",
+      "recordId": "FR-3676",
+      "actorName": "HQ Dispatcher",
+      "actorRole": "admin",
+      "createdAt": "Just now",
+      "diff": {
+        "oldStatus": "prioritized",
+        "newStatus": "assigned",
+        "note": "Assigned to boat unit",
+        "assignedTeam": "Team Alpha 01"
+      }
+    },
+    {
+      "id": "log-1792037988529",
+      "action": "SUBMIT_SOS",
+      "tableName": "emergency_requests",
+      "recordId": "FR-3676",
+      "actorName": "E2E Test Citizen",
+      "actorRole": "citizen",
+      "createdAt": "Just now",
+      "diff": {
+        "urgency": "critical",
+        "people": 4,
+        "score": 71
+      }
+    },
     {
       "id": "log-1790836372970",
       "action": "BROADCAST_ALERT",
@@ -626,7 +951,7 @@
       "email": "satish.diver@telangana.gov.in",
       "phone": "+91 98480 77665",
       "role": "rescue_team",
-      "verificationStatus": "pending",
+      "verificationStatus": "verified",
       "isActive": true,
       "createdAt": "Today at 07:45 AM"
     },
@@ -636,7 +961,7 @@
       "email": "sunil.rc@gmail.com",
       "phone": "+91 99887 11223",
       "role": "volunteer",
-      "verificationStatus": "pending",
+      "verificationStatus": "verified",
       "isActive": true,
       "createdAt": "Today at 08:30 AM"
     }
